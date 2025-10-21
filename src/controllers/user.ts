@@ -143,3 +143,79 @@ export async function userLogin(
   }
 }
 
+export async function getProfileDetails(req: Request, res: Response) {
+  const userPayload = req.userId;
+  let userId: number | undefined;
+  if (typeof userPayload === "string") {
+    userId = Number(userPayload);
+  } else if (
+    userPayload &&
+    typeof userPayload === "object" &&
+    "id" in userPayload
+  ) {
+    userId = Number(userPayload.id);
+  }
+
+  if (!userId || isNaN(userId)) {
+    return res.status(401).json({
+      status: {
+        code: 401,
+        status: "Error",
+      },
+      data: {
+        message: "Unauthorized - user not authenticated",
+      },
+    });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        posts: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        status: {
+          code: 404,
+          status: "Error",
+        },
+        data: {
+          message: "User not found",
+        },
+      });
+    }
+
+    return res.status(200).json({
+      status: {
+        code: 200,
+        status: "Success",
+      },
+      data: {
+        user: user,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    return res.status(500).json({
+      status: {
+        code: 500,
+        status: "Error",
+      },
+      data: {
+        message: "Internal server error",
+        error: error,
+      },
+    });
+  }
+}
