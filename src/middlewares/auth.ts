@@ -11,11 +11,11 @@ export function authenticateToken(req: Request, res: Response, next: Function) {
   if (!token) {
     return res.sendStatus(401);
   }
-  jwt.verify(token, JWT_SECRET as string, (err, user) => {
+  jwt.verify(token, JWT_SECRET as string, (err, userId) => {
     if (err) {
       return res.sendStatus(403);
     }
-    req.user = user;
+    req.userId = userId;
     next();
   });
 }
