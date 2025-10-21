@@ -15,9 +15,11 @@ datasource db {
 
 model User {
   id       Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  posts     Post[]
+  email   String   @unique
+  firstName String
+  lastName  String?
+  password String
+  posts    Post[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -25,10 +27,10 @@ model User {
 model Post {
   id        Int      @id @default(autoincrement())
   title     String
-  content   String
+  content   String?
   published Boolean  @default(false)
-  authorId  Int
   author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
