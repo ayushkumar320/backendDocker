@@ -42,4 +42,9 @@
     "skipLibCheck": true,
     "removeComments": true
   }
+  ,
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts"
+  ]
 }
