@@ -38,7 +38,7 @@ export async function createPost(
   }
 
   try {
-    const newPost = await prisma.post.create({
+    await prisma.post.create({
       data: {
         title,
         content: content ?? null,
