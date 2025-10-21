@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 interface SignupRequestBody {
   email: string;
   firstName: string;
-  lastName?: string;
+  lastName?: string | undefined;
   password: string;
 }
 
@@ -226,4 +226,90 @@ export async function getProfileDetails(req: Request, res: Response) {
   }
 }
 
+export async function updateUserProfile(
+  req: Request<never, any, Partial<SignupRequestBody>>,
+  res: Response
+) {
+  const {firstName, lastName, password} = req.body;
+  const userId = userPayloadToUserId(req);
 
+  if (!userId) {
+    return res.status(401).json({
+      status: {
+        code: 401,
+        status: "Error",
+      },
+      data: {
+        message: "Unauthorized - user not authenticated",
+      },
+    });
+  }
+
+  try {
+    const updateData: {
+      firstName?: string;
+      lastName?: string | null;
+      password?: string;
+    } = {};
+
+    if (firstName) {
+      updateData.firstName = firstName;
+    }
+
+    if (lastName !== undefined) {
+      updateData.lastName = lastName ?? null;
+    }
+
+    if (password) {
+      const passwordSalt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, passwordSalt);
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        status: {
+          code: 400,
+          status: "Error",
+        },
+        data: {
+          message: "No fields to update",
+        },
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: {id: userId},
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        updatedAt: true,
+      },
+    });
+
+    return res.status(200).json({
+      status: {
+        code: 200,
+        status: "Success",
+      },
+      data: {
+        message: "User profile updated successfully",
+        user: updatedUser,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    return res.status(500).json({
+      status: {
+        code: 500,
+        status: "Error",
+      },
+      data: {
+        message: "Internal server error",
+        error: error,
+      },
+    });
+  }
+}
