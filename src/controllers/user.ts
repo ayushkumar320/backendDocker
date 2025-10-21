@@ -52,7 +52,7 @@ export async function userSignup(req: Request, res: Response) {
     }
   } catch (error) {
     console.error("Error signing up user:", error);
-    return res.json({
+    return res.status(500).json({
       status: {
         code: 500,
         status: "Error",
@@ -97,7 +97,7 @@ export async function userLogin(req: Request, res: Response) {
         }, JWT_SECRET as string, {
           expiresIn: "7d"
         });
-        return res.json({
+        return res.status(200).json({
           status: {
             code: 200,
             status: "Success",
@@ -110,7 +110,7 @@ export async function userLogin(req: Request, res: Response) {
       }
     }
   } catch (error) {
-    return res.json({
+    return res.status(500).json({
       status: {
         code: 500,
         status: "Error",
