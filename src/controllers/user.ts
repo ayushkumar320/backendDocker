@@ -19,6 +19,22 @@ interface LoginRequestBody {
   password: string;
 }
 
+export function userPayloadToUserId(req: Request): number | null {
+  const userPayload = req.userId;
+  let userId: number | null = null;
+
+  if (typeof userPayload === "string") {
+    userId = Number(userPayload);
+  } else if (
+    userPayload &&
+    typeof userPayload === "object" &&
+    "id" in userPayload
+  ) {
+    userId = Number(userPayload.id);
+  }
+  return userId && !isNaN(userId) ? userId : null;
+}
+
 export async function userSignup(
   req: Request<never, any, SignupRequestBody>,
   res: Response
@@ -144,19 +160,9 @@ export async function userLogin(
 }
 
 export async function getProfileDetails(req: Request, res: Response) {
-  const userPayload = req.userId;
-  let userId: number | undefined;
-  if (typeof userPayload === "string") {
-    userId = Number(userPayload);
-  } else if (
-    userPayload &&
-    typeof userPayload === "object" &&
-    "id" in userPayload
-  ) {
-    userId = Number(userPayload.id);
-  }
+  const userId = userPayloadToUserId(req);
 
-  if (!userId || isNaN(userId)) {
+  if (!userId) {
     return res.status(401).json({
       status: {
         code: 401,
@@ -219,3 +225,5 @@ export async function getProfileDetails(req: Request, res: Response) {
     });
   }
 }
+
+

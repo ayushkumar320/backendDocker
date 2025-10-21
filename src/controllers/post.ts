@@ -1,5 +1,6 @@
 import prisma from "../db/connect.js";
 import type {Request, Response} from "express";
+import {userPayloadToUserId} from "./user.js";
 
 interface createPostRequestBody {
   title: string;
@@ -11,21 +12,9 @@ export async function createPost(
   res: Response
 ) {
   const {title, content} = req.body;
-  const userPayload = req.userId;
+  const userId = userPayloadToUserId(req);
 
-  // Extracting the user id from the JWT payload 
-  let userId: number | undefined;
-  if (typeof userPayload === "string") {
-    userId = Number(userPayload);
-  } else if (
-    userPayload &&
-    typeof userPayload === "object" &&
-    "id" in userPayload
-  ) {
-    userId = Number(userPayload.id);
-  }
-
-  if (!userId || isNaN(userId)) {
+  if (!userId) {
     return res.status(401).json({
       status: {
         code: 401,
